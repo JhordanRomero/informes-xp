@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="es"> 
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workshop Report Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // Set Tailwind dark mode strategy to 'class'
+      tailwind.config = {
+        darkMode: 'class', // or 'media'
+        theme: {
+          extend: {
+            // your theme extensions
+          }
+        },
+        plugins: [
+            tailwind.plugin(function({ addComponents, theme }) {
+                addComponents({
+                    '.prose': { // Basic prose styling, can be extended
+                        'color': theme('colors.gray.700'),
+                        'h1': { fontSize: theme('fontSize.2xl'), fontWeight: theme('fontWeight.bold') },
+                        'h2': { fontSize: theme('fontSize.xl'), fontWeight: theme('fontWeight.semibold') },
+                        'h3': { fontSize: theme('fontSize.lg'), fontWeight: theme('fontWeight.semibold') },
+                        'p': { marginTop: theme('spacing.2'), marginBottom: theme('spacing.2') },
+                        'ul': { listStyleType: 'disc', marginLeft: theme('spacing.5'), marginTop: theme('spacing.2'), marginBottom: theme('spacing.2') },
+                        'ol': { listStyleType: 'decimal', marginLeft: theme('spacing.5'), marginTop: theme('spacing.2'), marginBottom: theme('spacing.2') },
+                        'li': { marginTop: theme('spacing.1'), marginBottom: theme('spacing.1') },
+                        'strong': { fontWeight: theme('fontWeight.bold') },
+                        'em': { fontStyle: 'italic' },
+                        'a': { color: theme('colors.blue.600'), textDecoration: 'underline' },
+                    },
+                    '.dark .prose-invert': { // Dark mode prose styling
+                        'color': theme('colors.gray.300'),
+                        'h1': { color: theme('colors.gray.100') },
+                        'h2': { color: theme('colors.gray.200') },
+                        'h3': { color: theme('colors.gray.200') },
+                        'a': { color: theme('colors.blue.400') },
+                        'strong': { color: theme('colors.gray.100') },
+                    }
+                })
+            })
+        ]
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+      html.dark body {
+        /* These styles will only apply if 'dark' class is present on html */
+        /* background-color: #111827; */
+        /* color: #d1d5db; */
+      }
+      @media print {
+        body * {
+          visibility: hidden !important;
+        }
+        html, body, #root, #root > div:first-child, main#pageContainer, main#pageContainer *, .report-page, .report-page * {
+          visibility: visible !important;
+        }
+
+        html, body {
+          background-color: #ffffff !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          height: auto !important;
+          overflow: visible !important;
+          -webkit-print-color-adjust: exact !important; /* Exact colors */
+          color-adjust: exact !important;
+        }
+        body {
+          font-family: 'Inter', 'Poppins', sans-serif; /* Consistent font */
+          display: block !important; /* Override any body flex/grid for screen */
+        }
+
+        #root,
+        #root > div:first-child,
+        main#pageContainer {
+          position: static !important;
+          width: 100% !important;
+          height: auto !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: none !important; /* Transparent background */
+          border: none !important;
+          box-shadow: none !important;
+          display: block !important; /* No flex/grid centering */
+          overflow: visible !important;
+          gap: 0 !important; /* Reset gap if it's a flex/grid container */
+        }
+
+        .report-page {
+          width: 100% !important;
+          height: auto !important;
+          min-height: initial !important;
+          padding: 50px 60px !important; /* Inner padding of the white canvas */
+          margin: 0 auto !important; 
+          border: none !important; /* No border on the page div itself */
+          box-shadow: none !important; /* No shadow on the page div itself */
+          background-color: #ffffff !important; /* Explicit white background for content area */
+          page-break-after: always; /* Page break after each report page */
+          box-sizing: border-box !important;
+          position: static !important; /* Ensure no odd positioning */
+          overflow: visible !important; /* Content shouldn't be clipped */
+        }
+        .report-page:last-child {
+          page-break-after: avoid; /* No page break after the last page */
+        }
+
+        /* Elements to HIDE completely (even if they are inside a visible area) */
+        .controls-panel,
+        div.fixed[class*="bg-opacity-"][class*="inset-0"], /* Loading overlay and modals */
+        div.fixed[role="alert"], /* Import success/error alerts */
+        .delete-page-btn, /* The 'X' to delete a page */
+        .add-module-button-placement-container, /* The '+' buttons to add modules */
+        .module-controls-button, /* The '...' button on module headers */
+        .module-menu, /* The dropdown menu for module actions */
+        .remove-image-btn, /* The 'x' button on ImagePlaceholders */
+        /* Specific in-item delete/edit buttons (identified by title or specific classes) */
+        .group\\/infogriditem button[title*="Eliminar"], .group\\/infogriditem button[title*="Cambiar ícono"],
+        .group\\/jornadaitem button[title*="Eliminar"],
+        .group\\/aspectokeyitem button[title*="Eliminar"],
+        .group\\/desafioitem button[title*="Eliminar"],
+        .group\\/bulletitem button[title*="Eliminar"],
+        .group\\/participationitem button[title*="Eliminar"], .group\\/participationitem button[title*="Cambiar ícono"],
+        .group\\/participationgroupcard button[title*="Opciones del grupo"],
+        .print\\:hidden /* General .print:hidden utility if used elsewhere */
+         {
+          display: none !important;
+        }
+        
+        /* Ensure logos and title are visible and reasonably sized */
+        .logo-container img {
+            max-height: 40px !important;
+            width: auto !important;
+            object-fit: contain !important;
+        }
+        /* Ensure headers, titles, and editable fields themselves are visible */
+        .report-title-container h1, .report-title-container h1 *,
+        .module-container h2, .module-container h2 *,
+        .editable-field, .editable-field * {
+             visibility: visible !important;
+        }
+
+
+        /* Retain useful Tailwind print utilities from user's original HTML */
+        .print\\:shadow-none { box-shadow: none !important; }
+        .print\\:shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06) !important; }
+        .print\\:break-after-page { break-after: page !important; }
+        .print\\:break-after-avoid { break-after: avoid !important; }
+        .print\\:bg-transparent { background-color: transparent !important; }
+        
+        .print\\:text-\\[24pt\\] { font-size: 24pt !important; }
+        .print\\:text-\\[16pt\\] { font-size: 16pt !important; }
+        .print\\:text-\\[12pt\\] { font-size: 12pt !important; }
+        .print\\:text-\\[10pt\\] { font-size: 10pt !important; }
+        .print\\:text-6xl { font-size: 3.75rem !important; }
+        .print\\:text-5xl { font-size: 3rem !important; }
+        .print\\:text-4xl { font-size: 2.25rem !important; }
+        .print\\:text-3xl { font-size: 1.875rem !important; }
+        .print\\:text-sm { font-size: 0.875rem !important; }
+
+        .print\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+        .print\\:gap-0 { gap: 0 !important; }
+        .print\\:gap-2 { gap: 0.5rem !important; }
+        
+        .image-placeholder-print-border.has-image-print {
+            border-style: solid !important;
+            border-color: #d1d5db !important; 
+            border-width: 2px !important;
+        }
+        
+        .print\\:shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05) !important; }
+        .print\\:w-16 { width: 4rem !important; }
+        .print\\:h-16 { height: 4rem !important; }
+      }
+      [role="button"], button {
+        cursor: pointer;
+      }
+      /* Add a class to ensure contenteditable placeholders are visible if needed */
+      [contenteditable][placeholder]:empty:before {
+        content: attr(placeholder);
+        color: #a0aec0; /* gray-500 */
+        pointer-events: none; /* Allow clicks to focus the element */
+        display: inline-block; /* Or block, depending on desired layout */
+      }
+      html.dark [contenteditable][placeholder]:empty:before {
+        color: #718096; /* gray-600 */
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "lodash-es": "https://esm.sh/lodash-es@^4.17.21",
+    "lodash-es/": "https://esm.sh/lodash-es@^4.17.21/",
+    "mammoth": "https://esm.sh/mammoth@1.7.1",
+    "pdfjs-dist": "https://esm.sh/pdfjs-dist@4.5.136",
+    "pdfjs-dist/build/pdf.worker.min.mjs": "https://esm.sh/pdfjs-dist@4.5.136/build/pdf.worker.min.mjs",
+    "@google/genai": "https://esm.sh/@google/genai@0.15.0",
+    "html2canvas": "https://esm.sh/html2canvas@1.4.1",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "path": "https://esm.sh/path@^0.12.7",
+    "vite": "https://esm.sh/vite@^6.3.5",
+    "url": "https://esm.sh/url@^0.11.4"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-100 dark:bg-gray-900">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html><link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>
+<link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>

@@ -1,0 +1,6 @@
+{
+  "name": "V20",
+  "description": "A web application to generate detailed reports for workshops, allowing users to edit content, add multiple pages, manage images, and export to PDF.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
